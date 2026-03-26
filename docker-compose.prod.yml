@@ -5,19 +5,19 @@ services:
   auth-service:
     image: ghcr.io/${GITHUB_USERNAME}/secure-vault-auth:latest
     env_file:
-      - .env
+      - ./backend/.env
     restart: always
 
   vault-service:
     image: ghcr.io/${GITHUB_USERNAME}/secure-vault-vault:latest
     env_file:
-      - .env
+      - ./backend/.env
     restart: always
 
   api-gateway:
     image: ghcr.io/${GITHUB_USERNAME}/secure-vault-gateway:latest
     env_file:
-      - .env
+      - ./backend/.env
     ports:
       - "3000:3000"
     depends_on:
