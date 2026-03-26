@@ -1,0 +1,32 @@
+version: '3.8'
+
+services:
+  # Load Image trực tiếp từ GitHub Container Registry (không tự build)
+  auth-service:
+    image: ghcr.io/${GITHUB_USERNAME}/secure-vault-auth:latest
+    env_file:
+      - .env
+    restart: always
+
+  vault-service:
+    image: ghcr.io/${GITHUB_USERNAME}/secure-vault-vault:latest
+    env_file:
+      - .env
+    restart: always
+
+  api-gateway:
+    image: ghcr.io/${GITHUB_USERNAME}/secure-vault-gateway:latest
+    env_file:
+      - .env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - vault-service
+    restart: always
+
+# Khai báo network name của server bạn (nơi db \`melodix-db\` đang chạy)
+networks:
+  default:
+    external: true
+    name: ten_network_docker_chua_melodix_db

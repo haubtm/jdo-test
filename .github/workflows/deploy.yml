@@ -1,0 +1,76 @@
+name: CI/CD Backend Pipeline
+
+on:
+  push:
+    branches:
+      - main # Chạy action này mỗi khi có code đẩy lên nhánh main
+      - master
+
+jobs:
+  build-and-push-docker:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      # Đăng nhập vào GitHub Container Registry (Nơi lưu trữ Image giống Docker Hub nhưng miễn phí của Github)
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Build và Push cục Auth Service
+      - name: Build and Push Auth Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          build-args: APP_NAME=auth-service
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/secure-vault-auth:latest
+
+      # Build và Push cục Vault Service
+      - name: Build and Push Vault Service
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          build-args: APP_NAME=vault-service
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/secure-vault-vault:latest
+
+      # Build và Push cục API Gateway
+      - name: Build and Push API Gateway
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          build-args: APP_NAME=api-gateway
+          push: true
+          tags: ghcr.io/${{ github.repository_owner }}/secure-vault-gateway:latest
+
+  deploy-to-vps:
+    needs: build-and-push-docker
+    runs-on: ubuntu-latest
+    steps:
+      # Sứ giả SSH chui vào Server của bạn từ xa để gõ lệnh Deploy
+      - name: Deploy to VPS Server via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          script: |
+             cd ~/jdo-test
+             
+             # Xuất Username để docker-compose.prod.yml biết tên tài khoản Github
+             export GITHUB_USERNAME=${{ github.repository_owner }}
+             
+             # Cập nhật Image mới nhất từ GitHub về Server
+             docker compose -f docker-compose.prod.yml pull
+             
+             # Chạy các service lên (chỉ khởi động lại 3 cục backend, cực nhẹ)
+             docker compose -f docker-compose.prod.yml up -d
