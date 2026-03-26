@@ -49,17 +49,17 @@ export function VaultForm({ onSubmit }: VaultFormProps) {
   return (
     <form className="vault-form" onSubmit={handleSubmit}>
       <div className="field">
-        <label htmlFor="service">Service</label>
+        <label htmlFor="service">Dịch vụ</label>
         <input id="service" value={form.service} onChange={(event) => updateField('service', event.target.value)} placeholder="Github, Gmail, AWS..." required />
       </div>
 
       <div className="field">
-        <label htmlFor="username">Username</label>
+        <label htmlFor="username">Tên đăng nhập</label>
         <input id="username" value={form.username} onChange={(event) => updateField('username', event.target.value)} placeholder="user@example.com" required />
       </div>
 
       <div className="field">
-        <label htmlFor="password">Password</label>
+        <label htmlFor="password">Mật khẩu</label>
         <div className="password-input-row">
           <input
             id="password"
@@ -92,8 +92,8 @@ export function VaultForm({ onSubmit }: VaultFormProps) {
       </div>
 
       <div className="field">
-        <label htmlFor="note">Note</label>
-        <textarea id="note" value={form.note} onChange={(event) => updateField('note', event.target.value)} placeholder="Recovery codes, hints, owner..." rows={3} />
+        <label htmlFor="note">Ghi chú</label>
+        <textarea id="note" value={form.note} onChange={(event) => updateField('note', event.target.value)} placeholder="Mã khôi phục, gợi ý, chủ sở hữu..." rows={3} />
       </div>
 
       <button type="submit" disabled={loading}>

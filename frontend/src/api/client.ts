@@ -39,7 +39,7 @@ export async function getVaultItems(token: string): Promise<VaultItem[]> {
   });
 
   if (!response.ok) {
-    throw new Error('Failed to load vault items');
+    throw new Error('Tải danh sách tài khoản thất bại');
   }
 
   return response.json();
@@ -59,7 +59,7 @@ export async function createVaultItem(
   });
 
   if (!response.ok) {
-    throw new Error('Failed to create vault item');
+    throw new Error('Thêm tài khoản mới thất bại');
   }
 
   return response.json();
@@ -74,7 +74,7 @@ export async function deleteVaultItem(token: string, id: string): Promise<void> 
   });
 
   if (!response.ok) {
-    throw new Error('Failed to delete vault item');
+    throw new Error('Xóa tài khoản thất bại');
   }
 }
 
@@ -93,7 +93,7 @@ export async function updateVaultItem(
   });
 
   if (!response.ok) {
-    throw new Error('Failed to update vault item');
+    throw new Error('Cập nhật tài khoản thất bại');
   }
 
   return response.json();

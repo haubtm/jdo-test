@@ -40,17 +40,17 @@ export function EditVaultModal({ item, onSave, onClose }: EditVaultModalProps) {
 
         <form className="vault-form" onSubmit={handleSubmit}>
           <div className="field">
-            <label htmlFor="edit-service">Service</label>
+            <label htmlFor="edit-service">Dịch vụ</label>
             <input id="edit-service" value={service} onChange={(e) => setService(e.target.value)} required />
           </div>
 
           <div className="field">
-            <label htmlFor="edit-username">Username</label>
+            <label htmlFor="edit-username">Tên đăng nhập</label>
             <input id="edit-username" value={username} onChange={(e) => setUsername(e.target.value)} required />
           </div>
 
           <div className="field">
-            <label htmlFor="edit-password">Password</label>
+            <label htmlFor="edit-password">Mật khẩu</label>
             <div className="password-input-row">
               <input
                 id="edit-password"
@@ -76,7 +76,7 @@ export function EditVaultModal({ item, onSave, onClose }: EditVaultModalProps) {
           </div>
 
           <div className="field">
-            <label htmlFor="edit-note">Note</label>
+            <label htmlFor="edit-note">Ghi chú</label>
             <textarea id="edit-note" value={note} onChange={(e) => setNote(e.target.value)} rows={3} />
           </div>
 

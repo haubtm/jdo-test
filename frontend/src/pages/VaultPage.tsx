@@ -141,8 +141,8 @@ export function VaultPage() {
 
         <article className="panel">
           <div className="panel-header">
-            <h2>Vault items</h2>
-            <span>{filteredItems.length} items</span>
+            <h2>Tài khoản đã lưu</h2>
+            <span>{filteredItems.length} mục</span>
           </div>
 
           {/* Search bar */}
@@ -159,7 +159,7 @@ export function VaultPage() {
             />
           </div>
 
-          {loading && <p>Loading vault...</p>}
+          {loading && <p>Đang tải hệ thống...</p>}
           {error && <p className="error-text">{error}</p>}
 
           <div className="vault-list">
