@@ -1,8 +1,11 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectRepository } from '@nestjs/typeorm';
 import * as argon2 from 'argon2';
-import { randomBytes, randomUUID } from 'crypto';
-import type { LoginPayload, RegisterPayload, UserRecord } from '../../../libs/common/src/dto';
+import { randomBytes } from 'crypto';
+import { Repository } from 'typeorm';
+import type { LoginPayload, RegisterPayload } from '../../../libs/common/src/dto';
+import { User } from './user.entity';
 
 function generateVaultId(): string {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
@@ -13,19 +16,26 @@ function generateVaultId(): string {
 
 @Injectable()
 export class AuthService {
-  private readonly users = new Map<string, UserRecord>();
-
-  constructor(private readonly jwtService: JwtService) {}
+  constructor(
+    private readonly jwtService: JwtService,
+    @InjectRepository(User)
+    private readonly userRepository: Repository<User>,
+  ) {}
 
   async register(payload: RegisterPayload) {
     let vaultId: string;
+    let isUnique = false;
     do {
       vaultId = generateVaultId();
-    } while (this.users.has(vaultId));
+      const existing = await this.userRepository.findOne({ where: { vaultId } });
+      if (!existing) {
+        isUnique = true;
+      }
+    } while (!isUnique);
 
     const passwordHash = await argon2.hash(payload.password);
-    const user: UserRecord = { id: randomUUID(), vaultId, passwordHash };
-    this.users.set(vaultId, user);
+    const user = this.userRepository.create({ vaultId, passwordHash });
+    await this.userRepository.save(user);
 
     return {
       accessToken: await this.jwtService.signAsync({ sub: user.id, vaultId: user.vaultId }),
@@ -34,7 +44,7 @@ export class AuthService {
   }
 
   async login(payload: LoginPayload) {
-    const user = this.users.get(payload.vaultId);
+    const user = await this.userRepository.findOne({ where: { vaultId: payload.vaultId } });
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }

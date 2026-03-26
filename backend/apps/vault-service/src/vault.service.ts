@@ -1,17 +1,21 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { randomUUID } from 'crypto';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { decryptSecret, encryptSecret } from '../../../libs/common/src/crypto.util';
-import type { CreateVaultPayload, DeleteVaultPayload, UpdateVaultPayload, VaultRecord } from '../../../libs/common/src/dto';
+import type { CreateVaultPayload, DeleteVaultPayload, UpdateVaultPayload } from '../../../libs/common/src/dto';
+import { VaultCredential } from './vault-credential.entity';
 
 @Injectable()
 export class VaultService {
-  private readonly records = new Map<string, VaultRecord[]>();
+  constructor(
+    @InjectRepository(VaultCredential)
+    private readonly credentialRepository: Repository<VaultCredential>,
+  ) {}
 
-  create(payload: CreateVaultPayload) {
+  async create(payload: CreateVaultPayload) {
     const encrypted = encryptSecret(payload.password);
 
-    const record: VaultRecord = {
-      id: randomUUID(),
+    const record = this.credentialRepository.create({
       userId: payload.userId,
       service: payload.service,
       username: payload.username,
@@ -19,36 +23,49 @@ export class VaultService {
       iv: encrypted.iv,
       authTag: encrypted.authTag,
       note: payload.note,
-      createdAt: new Date().toISOString(),
-    };
+    });
 
-    const existing = this.records.get(payload.userId) ?? [];
-    this.records.set(payload.userId, [record, ...existing]);
+    await this.credentialRepository.save(record);
 
     return {
       id: record.id,
       service: record.service,
       username: record.username,
-      password: decryptSecret(record),
+      password: decryptSecret({
+        encryptedPassword: record.encryptedPassword,
+        iv: record.iv,
+        authTag: record.authTag,
+      }),
       note: record.note,
-      createdAt: record.createdAt,
+      createdAt: record.createdAt.toISOString(),
     };
   }
 
-  findAll(userId: string) {
-    const existing = this.records.get(userId) ?? [];
-    return existing.map((record) => ({
+  async findAll(userId: string) {
+    const records = await this.credentialRepository.find({
+      where: { userId },
+      order: { createdAt: 'DESC' },
+    });
+
+    return records.map((record) => ({
       id: record.id,
       service: record.service,
       username: record.username,
-      password: decryptSecret(record),
+      password: decryptSecret({
+        encryptedPassword: record.encryptedPassword,
+        iv: record.iv,
+        authTag: record.authTag,
+      }),
       note: record.note,
-      createdAt: record.createdAt,
+      createdAt: record.createdAt.toISOString(),
     }));
   }
 
-  findOne(userId: string, credentialId: string) {
-    const record = (this.records.get(userId) ?? []).find((item) => item.id === credentialId);
+  async findOne(userId: string, credentialId: string) {
+    const record = await this.credentialRepository.findOne({
+      where: { id: credentialId, userId },
+    });
+
     if (!record) {
       throw new NotFoundException('Credential not found');
     }
@@ -57,54 +74,61 @@ export class VaultService {
       id: record.id,
       service: record.service,
       username: record.username,
-      password: decryptSecret(record),
+      password: decryptSecret({
+        encryptedPassword: record.encryptedPassword,
+        iv: record.iv,
+        authTag: record.authTag,
+      }),
       note: record.note,
-      createdAt: record.createdAt,
+      createdAt: record.createdAt.toISOString(),
     };
   }
 
-  update(payload: UpdateVaultPayload) {
-    const userRecords = this.records.get(payload.userId) ?? [];
-    const index = userRecords.findIndex((item) => item.id === payload.credentialId);
-    if (index === -1) {
+  async update(payload: UpdateVaultPayload) {
+    const record = await this.credentialRepository.findOne({
+      where: { id: payload.credentialId, userId: payload.userId },
+    });
+
+    if (!record) {
       throw new NotFoundException('Credential not found');
     }
 
-    const existing = userRecords[index];
-
-    if (payload.service !== undefined) existing.service = payload.service;
-    if (payload.username !== undefined) existing.username = payload.username;
-    if (payload.note !== undefined) existing.note = payload.note;
+    if (payload.service !== undefined) record.service = payload.service;
+    if (payload.username !== undefined) record.username = payload.username;
+    if (payload.note !== undefined) record.note = payload.note;
 
     if (payload.password !== undefined) {
       const encrypted = encryptSecret(payload.password);
-      existing.encryptedPassword = encrypted.encryptedPassword;
-      existing.iv = encrypted.iv;
-      existing.authTag = encrypted.authTag;
+      record.encryptedPassword = encrypted.encryptedPassword;
+      record.iv = encrypted.iv;
+      record.authTag = encrypted.authTag;
     }
 
-    userRecords[index] = existing;
-    this.records.set(payload.userId, userRecords);
+    await this.credentialRepository.save(record);
 
     return {
-      id: existing.id,
-      service: existing.service,
-      username: existing.username,
-      password: decryptSecret(existing),
-      note: existing.note,
-      createdAt: existing.createdAt,
+      id: record.id,
+      service: record.service,
+      username: record.username,
+      password: decryptSecret({
+        encryptedPassword: record.encryptedPassword,
+        iv: record.iv,
+        authTag: record.authTag,
+      }),
+      note: record.note,
+      createdAt: record.createdAt.toISOString(),
     };
   }
 
-  delete(payload: DeleteVaultPayload) {
-    const userRecords = this.records.get(payload.userId) ?? [];
-    const index = userRecords.findIndex((item) => item.id === payload.credentialId);
-    if (index === -1) {
+  async delete(payload: DeleteVaultPayload) {
+    const result = await this.credentialRepository.delete({
+      id: payload.credentialId,
+      userId: payload.userId,
+    });
+
+    if (result.affected === 0) {
       throw new NotFoundException('Credential not found');
     }
-
-    userRecords.splice(index, 1);
-    this.records.set(payload.userId, userRecords);
 
     return { deleted: true };
   }

@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  # Microservice Auth
+  auth-service:
+    build:
+      context: ./backend
+      args:
+        APP_NAME: auth-service
+    env_file:
+      - ./backend/.env
+    # Giữ container chạy và tự động restart
+    restart: always
+
+  # Microservice Vault
+  vault-service:
+    build:
+      context: ./backend
+      args:
+        APP_NAME: vault-service
+    env_file:
+      - ./backend/.env
+    restart: always
+
+  # API Gateway (Điểm vào chính của Backend)
+  api-gateway:
+    build:
+      context: ./backend
+      args:
+        APP_NAME: api-gateway
+    env_file:
+      - ./backend/.env
+    ports:
+      - "3000:3000"
+    depends_on:
+      - auth-service
+      - vault-service
+    restart: always
+
+  # Frontend Web
+  frontend:
+    build:
+      context: ./frontend
+    ports:
+      - "80:80"
+    restart: always
+
+# Khai báo network name của server bạn (nơi db \`melodix-db\` đang chạy)
+# Giả sử network đó tên là "app_network" (bạn cần đổi tên cho đúng)
+networks:
+  default:
+    external: true
+    name: ten_network_docker_chua_melodix_db
