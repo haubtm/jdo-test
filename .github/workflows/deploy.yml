@@ -66,6 +66,9 @@ jobs:
           script: |
              cd ~/jdo-test
              
+             # Kéo các file cấu hình mới nhất từ GitHub về Server (BAO GỒM docker-compose.prod.yml)
+             git pull origin main || git pull origin master
+             
              # Xuất Username để docker-compose.prod.yml biết tên tài khoản Github
              export GITHUB_USERNAME=${{ github.repository_owner }}
              
