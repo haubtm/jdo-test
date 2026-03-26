@@ -1,0 +1,25 @@
+{
+  "collection": "@nestjs/schematics",
+  "sourceRoot": "apps",
+  "monorepo": true,
+  "projects": {
+    "api-gateway": {
+      "type": "application",
+      "root": "apps/api-gateway",
+      "entryFile": "main",
+      "sourceRoot": "apps/api-gateway/src"
+    },
+    "auth-service": {
+      "type": "application",
+      "root": "apps/auth-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/auth-service/src"
+    },
+    "vault-service": {
+      "type": "application",
+      "root": "apps/vault-service",
+      "entryFile": "main",
+      "sourceRoot": "apps/vault-service/src"
+    }
+  }
+}
