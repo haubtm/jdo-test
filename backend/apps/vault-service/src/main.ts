@@ -6,7 +6,7 @@ import { VaultModule } from './vault.module';
 async function bootstrap() {
   const app = await NestFactory.createMicroservice<MicroserviceOptions>(VaultModule, {
     transport: Transport.TCP,
-    options: { host: '127.0.0.1', port: 4002 },
+    options: { host: process.env.TCP_HOST || '127.0.0.1', port: 4002 },
   });
 
   await app.listen();

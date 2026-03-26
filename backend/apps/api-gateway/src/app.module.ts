@@ -9,8 +9,8 @@ import { JwtGuard } from './jwt.guard';
   imports: [
     JwtModule.register({ secret: process.env.JWT_SECRET || 'replace-this' }),
     ClientsModule.register([
-      { name: 'AUTH_SERVICE', transport: Transport.TCP, options: { host: '127.0.0.1', port: 4001 } },
-      { name: 'VAULT_SERVICE', transport: Transport.TCP, options: { host: '127.0.0.1', port: 4002 } },
+      { name: 'AUTH_SERVICE', transport: Transport.TCP, options: { host: process.env.AUTH_SERVICE_HOST || '127.0.0.1', port: 4001 } },
+      { name: 'VAULT_SERVICE', transport: Transport.TCP, options: { host: process.env.VAULT_SERVICE_HOST || '127.0.0.1', port: 4002 } },
     ]),
   ],
   controllers: [AppController],
