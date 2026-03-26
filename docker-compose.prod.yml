@@ -25,8 +25,8 @@ services:
       - vault-service
     restart: always
 
-# Khai báo network name của server bạn (nơi db \`melodix-db\` đang chạy)
+# Khai báo network name của server bạn (nơi db `melodix-db` đang chạy)
 networks:
   default:
     external: true
-    name: ten_network_docker_chua_melodix_db
+    name: melodix_default
