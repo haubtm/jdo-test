@@ -1,6 +1,5 @@
 import type { AuthResponse, CreateVaultItemInput, LoginInput, RegisterInput, VaultItem } from '../types';
-
-const API_BASE_URL = 'http://localhost:3000';
+const API_BASE_URL = (import.meta as any).env.VITE_API_URL || 'http://localhost:3000';
 
 export async function loginUser(payload: LoginInput): Promise<AuthResponse> {
   const response = await fetch(`${API_BASE_URL}/auth/login`, {
