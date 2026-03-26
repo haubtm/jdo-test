@@ -23,4 +23,4 @@ COPY --from=builder /app/dist ./dist
 ENV APP_NAME=${APP_NAME}
 
 # Command chạy app từ thư mục dist tương ứng
-CMD sh -c "node dist/apps/${APP_NAME}/main.js"
+CMD sh -c "node dist/apps/${APP_NAME}/src/main.js"
