@@ -12,6 +12,7 @@ RUN npx nest build ${APP_NAME}
 
 FROM node:18-alpine
 WORKDIR /app
+ARG APP_NAME
 
 COPY package*.json ./
 RUN npm install --only=production
